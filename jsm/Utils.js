@@ -52,4 +52,17 @@ function glToCssPos({ x, y }, { width, height }) {
   };
 }
 
-export { initShaders, getMousePosInWebgl, glToCssPos };
+// 线性比例尺
+function scaleLinear(ax, ay, bx, by) {
+  const delta = {
+    x: bx - ax,
+    y: by - ay,
+  };
+  const k = delta.y / delta.x;
+  const b = ay - ax * k;
+  return (x) => {
+    return k * x + b;
+  };
+}
+
+export { initShaders, getMousePosInWebgl, glToCssPos, scaleLinear };
