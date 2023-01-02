@@ -20,10 +20,10 @@
       attribute vec4 a_Position;
       attribute float a_PointSize;
       void main() {
-          // 点位
-          gl_Position = a_Position;
-          // 尺寸
-          gl_PointSize = a_PointSize;
+        // 点位
+        gl_Position = a_Position;
+        // 尺寸
+        gl_PointSize = a_PointSize;
       }
     </script>
     <!-- 片元着色器 -->
@@ -31,12 +31,12 @@
       precision mediump float;
       uniform vec4 u_FragColor;
       void main() {
-          float dist = distance(gl_PointCoord, vec2(0.5, 0.5));
-          if (dist < 0.5) {
-            gl_FragColor = u_FragColor;
-          } else {
-            discard;
-          }
+        float dist = distance(gl_PointCoord, vec2(0.5, 0.5));
+        if (dist < 0.5) {
+          gl_FragColor = u_FragColor;
+        } else {
+          discard;
+        }
       }
     </script>
 

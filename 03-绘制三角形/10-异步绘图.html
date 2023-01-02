@@ -20,6 +20,7 @@
       attribute vec4 a_Position;
       void main() {
         gl_Position = a_Position;
+        gl_PointSize = 20.0;
       }
     </script>
     <script id="fragmentShader" type="x-shader/x-fragment">
@@ -42,12 +43,14 @@
       initShaders(gl, vsSource, fsSource);
 
       // 设置顶点点位
-      const vertices = new Float32Array([
-        0.0, 0.3, -0.2, -0.1, 0.2, -0.1, 0.4, 0.3, 0.6, -0.1,
-      ]); // 顶点数据 x, y
+      const vertices = [0.0, 0.2]; // 顶点数据 x, y
       const vertexBuffer = gl.createBuffer(); // 建立缓冲区对象
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // 绑定缓冲区对象
-      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); // 往缓冲区对象中写入数据
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(vertices),
+        gl.STATIC_DRAW
+      ); // 往缓冲区对象中写入数据
       const a_Position = gl.getAttribLocation(gl.program, "a_Position");
       gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0); // 将缓冲区对象分配给attribute变量
       gl.enableVertexAttribArray(a_Position); // 开启顶点数据的批处理功能
@@ -57,7 +60,28 @@
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       // 绘图
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 5);
+      gl.drawArrays(gl.POINTS, 0, 1);
+
+      setTimeout(() => {
+        vertices.push(-0.2, -0.1);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array(vertices),
+          gl.STATIC_DRAW
+        ); // 往缓冲区对象中写入数据
+
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        // 绘图
+        gl.drawArrays(gl.POINTS, 0, 2);
+      }, 1000);
+
+      setTimeout(() => {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        // 绘制顶点
+        gl.drawArrays(gl.POINTS, 0, 2);
+        // 绘制线
+        gl.drawArrays(gl.LINES, 0, 2);
+      }, 2000);
     </script>
   </body>
 </html>

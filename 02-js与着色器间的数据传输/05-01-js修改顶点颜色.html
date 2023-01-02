@@ -19,10 +19,10 @@
     <script id="vertexShader" type="x-shader/x-vertex">
       attribute vec4 a_Position;
       void main() {
-          // 点位
-          gl_Position = a_Position;
-          // 尺寸
-          gl_PointSize = 100.0;
+        // 点位
+        gl_Position = a_Position;
+        // 尺寸
+        gl_PointSize = 100.0;
       }
     </script>
     <!-- 片元着色器 -->
@@ -30,7 +30,7 @@
       precision mediump float;
       uniform vec4 u_FragColor;
       void main() {
-          gl_FragColor = u_FragColor;
+        gl_FragColor = u_FragColor;
       }
     </script>
 

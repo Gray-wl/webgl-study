@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <!-- 建立着色器源文件 -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+      attribute vec4 a_Position;
+      void main() {
+        gl_Position = a_Position;
+        gl_PointSize = 20.0;
+      }
+    </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+      }
+    </script>
+    <script type="module">
+      import { initShaders, getMousePosInWebgl } from "../jsm/Utils.js";
+      import Poly from "../jsm/Poly.js";
+      import Sky from "../jsm/Sky.js";
+
+      // 获取webgl上下文
+      const canvas = document.querySelector("#canvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const gl = canvas.getContext("webgl");
+
+      // 初始化着色器
+      const vsSource = document.querySelector("#vertexShader").innerText;
+      const fsSource = document.querySelector("#fragmentShader").innerText;
+      initShaders(gl, vsSource, fsSource);
+
+      // 清理画布
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // 夜空
+      const sky = new Sky(gl);
+
+      // 正在绘制的多边形
+      let poly = null;
+
+      // 取消右击提示
+      canvas.oncontextmenu = function () {
+        return false;
+      };
+
+      // 鼠标移动事件
+      canvas.addEventListener("mousemove", (event) => {
+        if (poly) {
+          const { x, y } = getMousePosInWebgl(event, canvas);
+          poly.setVertice(poly.count - 1, x, y);
+          render();
+        }
+      });
+
+      // 鼠标按下事件
+      canvas.addEventListener("mousedown", (event) => {
+        if (event.button === 2) {
+          // 右击删除顶点
+          poly && popVertice();
+        } else {
+          const { x, y } = getMousePosInWebgl(event, canvas);
+          if (poly) {
+            // 连续添加顶点
+            poly.addVertice(x, y);
+          } else {
+            // 建立多边形
+            crtPoly(x, y);
+          }
+        }
+        render();
+      });
+
+      function render() {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        sky.draw();
+      }
+
+      function crtPoly(x, y) {
+        poly = new Poly({
+          vertices: [x, y, x, y],
+          types: ["POINTS", "LINE_STRIP"],
+        });
+        sky.add(poly);
+      }
+
+      function popVertice() {
+        poly.popVertice();
+        poly = null;
+      }
+    </script>
+  </body>
+</html>
