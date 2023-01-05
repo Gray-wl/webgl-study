@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <!-- 建立着色器源文件 -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+      attribute vec4 a_Position;
+      // 模型矩阵
+      uniform mat4 u_ModelMatrix;
+      // 视图矩阵
+      uniform mat4 u_ViewMatrix;
+      void main() {
+        gl_Position = u_ViewMatrix * u_ModelMatrix * a_Position;
+      }
+    </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+      }
+    </script>
+    <script type="module">
+      import {
+        Matrix4,
+        Vector3,
+        Quaternion,
+      } from "https://unpkg.com/three/build/three.module.js";
+      import { initShaders } from "../jsm/Utils.js";
+
+      // 获取webgl上下文
+      const canvas = document.querySelector("#canvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const gl = canvas.getContext("webgl");
+
+      // 初始化着色器
+      const vsSource = document.querySelector("#vertexShader").innerText;
+      const fsSource = document.querySelector("#fragmentShader").innerText;
+      initShaders(gl, vsSource, fsSource);
+
+      const verticeLib = [
+        1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0,
+        -1.0, -1.0, 1.0,
+        1.0, -1.0, 1.0,
+        1.0, -1.0, -1.0,
+        1.0, 1.0, -1.0,
+        -1.0, 1.0, -1.0,
+        -1.0, -1.0, -1.0,
+      ];
+
+      const indices = [
+        0.0, 1.0,
+        1.0, 2.0,
+        2.0, 3.0,
+        3.0, 0.0,
+
+        0.0, 5.0,
+        1.0, 6.0,
+        2.0, 7.0,
+        3.0, 4.0,
+
+        4.0, 5.0,
+        5.0, 6.0,
+        6.0, 7.0,
+        7.0, 4.0,
+      ];
+
+      const arr = [];
+
+      indices.forEach((n) => {
+        const i = n * 3;
+        arr.push(
+          verticeLib[i] / 5.0,
+          verticeLib[i + 1] / 5.0,
+          verticeLib[i + 2] / 5.0
+        );
+      });
+
+      // 设置顶点点位
+      const vertices = new Float32Array(arr); // 顶点数据 x, y
+      const vertexBuffer = gl.createBuffer(); // 建立缓冲区对象
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer); // 绑定缓冲区对象
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); // 往缓冲区对象中写入数据
+      const a_Position = gl.getAttribLocation(gl.program, "a_Position");
+      gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0); // 将缓冲区对象分配给attribute变量
+      gl.enableVertexAttribArray(a_Position); // 开启顶点数据的批处理功能
+
+      // 获取uniform变量
+      const u_ModelMatrix = gl.getUniformLocation(gl.program, "u_ModelMatrix");
+      const u_ViewMatrix = gl.getUniformLocation(gl.program, "u_ViewMatrix");
+      // uniform变量赋值
+      const modelMatrix = new Matrix4();
+      // modelMatrix.makeRotationY(0.3);
+      const viewMatrix = new Matrix4().lookAt(
+        new Vector3(0.2, 0.2, 1.0),
+        new Vector3(0.0, 0.0, 0.0),
+        new Vector3(0.0, 1.0, 0.0)
+      );
+      gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+      gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+
+      // 清理画布
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // 绘图
+      gl.drawArrays(gl.LINES, 0, indices.length);
+
+      let angle = 0;
+      !(function ani() {
+        angle += 0.02;
+        modelMatrix.makeRotationY(angle);
+        gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.LINES, 0, indices.length);
+        requestAnimationFrame(ani);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <!-- 建立着色器源文件 -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+      attribute vec4 a_Position;
+      uniform mat4 u_ViewMatrix;
+      void main() {
+        gl_Position = u_ViewMatrix * a_Position;
+        gl_PointSize = 3.0;
+      }
+    </script>
+    <script id="fragmentShader" type="x-shader/x-fragment">
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+    </script>
+    <script type="module">
+      import {
+        Matrix4,
+        Vector3,
+        Quaternion,
+        Plane,
+        Ray,
+      } from "https://unpkg.com/three/build/three.module.js";
+      import { initShaders } from "../jsm/Utils.js";
+      import Poly from "../jsm/Poly.js";
+
+      // 获取webgl上下文
+      const canvas = document.querySelector("#canvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const gl = canvas.getContext("webgl");
+
+      // 初始化着色器
+      const vsSource = document.querySelector("#vertexShader").innerText;
+      const fsSource = document.querySelector("#fragmentShader").innerText;
+      initShaders(gl, vsSource, fsSource);
+
+      // 清理画布
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+      // 视图矩阵
+      const viewMatrix = new Matrix4().lookAt(
+        new Vector3(0.2, 0.3, 1.0),
+        new Vector3(),
+        new Vector3(0.0, 1.0, 0.0)
+      );
+
+      // x,z 方向的空间坐标极值
+      const [minPosX, maxPosX, minPosZ, maxPosZ] = [-0.7, 0.8, -1.0, 1.0];
+      // 波浪对象
+      const wave = new Poly({
+        gl,
+        vertices: crtVertices(),
+        size: 3,
+        uniforms: {
+          u_ViewMatrix: {
+            type: "uniformMatrix4fv",
+            value: viewMatrix.elements,
+          },
+        },
+      });
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      wave.draw();
+
+      // 建立顶点集合
+      function crtVertices(offset = 0) {
+        const vertices = [];
+        for (let z = minPosZ; z < maxPosZ; z += 0.04) {
+          for (let x = minPosX; x < maxPosX; x += 0.03) {
+            vertices.push(x, 0.0, z);
+          }
+        }
+        return vertices;
+      }
+    </script>
+  </body>
+</html>

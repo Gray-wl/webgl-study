@@ -4,6 +4,7 @@ const defAttr = () => ({
   geoData: [], // 顶点的对象型数组
   size: 2, // 顶点分量数
   attrName: "a_Position", // attribute变量名称
+  uniforms: {}, // uniform变量集合
   count: 0, // 顶点数量
   types: ["POINTS"], // 绘图方式
   circleDot: false, // 是否是圆点
@@ -30,6 +31,7 @@ export default class Poly {
     if (circleDot) {
       this.u_IsPOINTS = gl.getUniformLocation(gl.program, "u_IsPOINTS");
     }
+    this.updateUniform();
   }
 
   // 添加顶点
@@ -77,6 +79,20 @@ export default class Poly {
       });
     });
     this.vertices = vertices;
+  }
+
+  // 更新uniform 变量
+  updateUniform() {
+    const { gl, uniforms } = this;
+    for (let [key, val] of Object.entries(uniforms)) {
+      const { type, value } = val;
+      const u = gl.getUniformLocation(gl.program, key);
+      if (type.includes("Matrix")) {
+        gl[type](u, false, value);
+      } else {
+        gl[type(u, value)];
+      }
+    }
   }
 
   // 绘图方法
